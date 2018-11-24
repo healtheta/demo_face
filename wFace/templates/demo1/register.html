@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML5 Media Device Access</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    video, img {
+      max-width:100%;
+    }
+	
+	form { 
+		margin: 0 auto; 
+		width:500px;
+	}
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+
+	<center><form action="/demo1/doregister/" method="post">
+		Name : <input type="text" name="name" id="name"><br><br>
+		<video width="500" height="500" autoplay></video><br>
+	</form><center/>
+
+<script>
+  (function() {
+    'use strict';
+    var video = document.querySelector('video')
+      , canvas;
+
+    /**
+     *  generates a still frame image from the stream in the <video>
+     *  appends the image to the <body>
+     */
+    function takeSnapshot() {
+      var img = document.getElementById("image")
+      var context;
+      var width = video.offsetWidth
+        , height = video.offsetHeight;
+
+      canvas = canvas || document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, width, height);
+
+      //img.src = canvas.toDataURL('image/png');
+	  
+		var dataUrl = canvas.toDataURL();
+		var bla = $('#name').val();
+		$.ajax({
+			type: "POST",
+			url: "/demo1/doregister/",
+			data: { 
+				imgBase64: dataUrl,
+				name:bla
+			}
+			}).done(function(msg) {
+				console.log(msg)
+				console.log('saved');
+			// Do Any thing you want
+		});
+		
+	  console.log(img);
+    }
+
+    // use MediaDevices API
+    // docs: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+    if (navigator.mediaDevices) {
+      // access the web cam
+      navigator.mediaDevices.getUserMedia({video: true})
+      // permission granted:
+        .then(function(stream) {
+          video.src = window.URL.createObjectURL(stream);
+          video.addEventListener('click', takeSnapshot);
+        })
+        // permission denied:
+        .catch(function(error) {
+          document.body.textContent = 'Could not access the camera. Error: ' + error.name;
+        });
+    }
+  })();
+
+</script>
+</body>
+</html>
